@@ -1,0 +1,959 @@
+/* CSS Variables */
+:root {
+  --primary-color: #3b82f6;
+  --secondary-color: #6366f1;
+  --danger-color: #ef4444;
+  --warning-color: #f97316;
+  --success-color: #22c55e;
+  --info-color: #0ea5e9;
+  --dark-color: #1f2937;
+  --light-color: #f3f4f6;
+  --text-color: #374151;
+  --border-color: #e5e7eb;
+  --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+}
+
+/* Reset */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+  background-color: var(--light-color);
+  color: var(--text-color);
+  overflow: hidden;
+}
+
+#app {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+/* Header */
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 1.5rem;
+  background: linear-gradient(135deg, var(--dark-color) 0%, #374151 100%);
+  color: white;
+  box-shadow: var(--shadow);
+  z-index: 1000;
+}
+
+.header h1 {
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.status-indicator {
+  padding: 0.375rem 0.75rem;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.status-indicator::before {
+  content: '';
+  width: 8px;
+  height: 8px;
+  background: var(--success-color);
+  border-radius: 50%;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+/* Main Content */
+.main-content {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+  position: relative;
+}
+
+/* Map Container */
+.map-container {
+  flex: 1;
+  height: 100%;
+  z-index: 1;
+}
+
+/* Control Panel */
+.control-panel {
+  width: 320px;
+  background: white;
+  box-shadow: var(--shadow-lg);
+  overflow-y: auto;
+  z-index: 100;
+  transition: transform 0.3s ease;
+}
+
+.control-panel.hidden {
+  transform: translateX(100%);
+}
+
+.panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 1.25rem;
+  background: var(--primary-color);
+  color: white;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.panel-header h2 {
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.toggle-panel {
+  background: transparent;
+  border: none;
+  color: white;
+  font-size: 1.5rem;
+  cursor: pointer;
+  padding: 0;
+  line-height: 1;
+}
+
+.panel-section {
+  padding: 1.25rem;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.panel-section h3 {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--dark-color);
+  margin-bottom: 1rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* Form Elements */
+.form-group {
+  margin-bottom: 1rem;
+}
+
+.form-group label {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 500;
+  margin-bottom: 0.375rem;
+  color: var(--text-color);
+}
+
+.form-group select,
+.form-group input {
+  width: 100%;
+  padding: 0.625rem 0.875rem;
+  border: 1px solid var(--border-color);
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  background: white;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.form-group select:focus,
+.form-group input:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+/* Buttons */
+.btn {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: none;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  margin-bottom: 0.5rem;
+}
+
+.btn:last-child {
+  margin-bottom: 0;
+}
+
+.btn-primary {
+  background: var(--primary-color);
+  color: white;
+}
+
+.btn-primary:hover {
+  background: #2563eb;
+}
+
+.btn-secondary {
+  background: var(--secondary-color);
+  color: white;
+}
+
+.btn-secondary:hover {
+  background: #4f46e5;
+}
+
+.btn-danger {
+  background: var(--danger-color);
+  color: white;
+}
+
+.btn-danger:hover {
+  background: #dc2626;
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Info Text */
+.info-text {
+  font-size: 0.75rem;
+  color: #6b7280;
+  margin-top: 0.5rem;
+  text-align: center;
+}
+
+/* Info Card */
+.info-card {
+  background: var(--light-color);
+  border-radius: 0.5rem;
+  padding: 1rem;
+  margin-bottom: 1rem;
+}
+
+.info-card p {
+  font-size: 0.875rem;
+  margin-bottom: 0.5rem;
+}
+
+.info-card p:last-child {
+  margin-bottom: 0;
+}
+
+.info-card strong {
+  color: var(--dark-color);
+}
+
+/* Status indicators */
+.status-safe {
+  color: var(--success-color);
+  font-weight: 600;
+}
+
+.status-warning {
+  color: var(--warning-color);
+  font-weight: 600;
+}
+
+.status-danger {
+  color: var(--danger-color);
+  font-weight: 600;
+}
+
+/* Legend */
+.legend {
+  position: absolute;
+  bottom: 2rem;
+  left: 1rem;
+  background: white;
+  padding: 1rem;
+  border-radius: 0.5rem;
+  box-shadow: var(--shadow-lg);
+  z-index: 1000;
+  font-size: 0.75rem;
+}
+
+.legend h4 {
+  font-size: 0.875rem;
+  margin-bottom: 0.75rem;
+  color: var(--dark-color);
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.375rem;
+}
+
+.legend-item:last-child {
+  margin-bottom: 0;
+}
+
+.legend-color {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* Mobile Toggle */
+.mobile-toggle {
+  display: none;
+  position: fixed;
+  bottom: 1rem;
+  right: 1rem;
+  padding: 0.75rem 1.25rem;
+  background: var(--primary-color);
+  color: white;
+  border: none;
+  border-radius: 9999px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  box-shadow: var(--shadow-lg);
+  cursor: pointer;
+  z-index: 1001;
+}
+
+/* Leaflet Custom Styles */
+.leaflet-popup-content-wrapper {
+  border-radius: 0.5rem;
+}
+
+.leaflet-popup-content {
+  margin: 0.75rem;
+  font-size: 0.875rem;
+}
+
+.leaflet-popup-content h4 {
+  margin-bottom: 0.5rem;
+  color: var(--dark-color);
+}
+
+.leaflet-popup-content p {
+  margin-bottom: 0.25rem;
+  color: var(--text-color);
+}
+
+.earthquake-popup .magnitude {
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.earthquake-popup .magnitude.low { color: var(--success-color); }
+.earthquake-popup .magnitude.moderate { color: #eab308; }
+.earthquake-popup .magnitude.high { color: var(--warning-color); }
+.earthquake-popup .magnitude.major { color: var(--danger-color); }
+
+/* Custom marker styles */
+.danger-zone-tooltip {
+  background: rgba(239, 68, 68, 0.9);
+  border: none;
+  color: white;
+  font-weight: 500;
+}
+
+/* Routing Machine Custom Styles */
+.leaflet-routing-container {
+  display: none;
+}
+
+/* Loading overlay */
+.loading-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255, 255, 255, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+}
+
+.loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid var(--border-color);
+  border-top-color: var(--primary-color);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Hospitals List */
+.hospitals-list {
+  max-height: 200px;
+  overflow-y: auto;
+  margin-top: 0.75rem;
+}
+
+.hospital-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.625rem;
+  background: var(--light-color);
+  border-radius: 0.375rem;
+  margin-bottom: 0.5rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.hospital-item:hover {
+  background: #fecaca;
+  transform: translateX(4px);
+}
+
+.hospital-item:last-child {
+  margin-bottom: 0;
+}
+
+.hospital-icon {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  flex-shrink: 0;
+}
+
+.hospital-details {
+  flex: 1;
+  min-width: 0;
+}
+
+.hospital-details strong {
+  display: block;
+  font-size: 0.8125rem;
+  color: var(--dark-color);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.hospital-details small {
+  font-size: 0.6875rem;
+  color: #6b7280;
+}
+
+/* Instructions Hint */
+.instructions-hint {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: white;
+  padding: 1.5rem 2rem;
+  border-radius: 1rem;
+  box-shadow: var(--shadow-lg);
+  z-index: 1500;
+  max-width: 320px;
+  text-align: left;
+}
+
+.instructions-hint p {
+  margin-bottom: 0.75rem;
+  font-size: 0.9375rem;
+  color: var(--dark-color);
+}
+
+.instructions-hint ol {
+  margin-left: 1.25rem;
+  margin-bottom: 1rem;
+  font-size: 0.875rem;
+  color: var(--text-color);
+}
+
+.instructions-hint li {
+  margin-bottom: 0.375rem;
+}
+
+.instructions-hint button {
+  width: 100%;
+  padding: 0.625rem 1rem;
+  background: var(--primary-color);
+  color: white;
+  border: none;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.instructions-hint button:hover {
+  background: #2563eb;
+}
+
+/* Route Card Enhancement */
+.route-card {
+  background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
+  border: 1px solid #a7f3d0;
+}
+
+/* ==========================================
+   MULTI-ROUTE COMPARISON STYLES
+   ========================================== */
+
+/* Route Comparison Container */
+.routes-comparison {
+  margin-top: 0.75rem;
+}
+
+.routes-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
+}
+
+.routes-header h4 {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--dark-color);
+}
+
+.routes-count {
+  font-size: 0.6875rem;
+  color: #6b7280;
+  background: var(--light-color);
+  padding: 0.25rem 0.5rem;
+  border-radius: 9999px;
+}
+
+/* Individual Route Card */
+.route-option {
+  position: relative;
+  background: white;
+  border: 2px solid var(--border-color);
+  border-radius: 0.625rem;
+  padding: 0.875rem;
+  margin-bottom: 0.625rem;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  overflow: hidden;
+}
+
+.route-option::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background: var(--route-color, var(--primary-color));
+}
+
+.route-option:hover {
+  border-color: var(--route-color, var(--primary-color));
+  transform: translateX(4px);
+  box-shadow: var(--shadow);
+}
+
+.route-option.selected {
+  border-color: var(--route-color, var(--primary-color));
+  background: linear-gradient(90deg, rgba(59, 130, 246, 0.05) 0%, white 100%);
+  box-shadow: var(--shadow-lg);
+}
+
+.route-option.recommended {
+  border-color: var(--success-color);
+}
+
+.route-option.recommended::after {
+  content: '★ RECOMMENDED';
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  font-size: 0.5625rem;
+  font-weight: 700;
+  color: white;
+  background: var(--success-color);
+  padding: 0.1875rem 0.375rem;
+  border-radius: 0.25rem;
+  letter-spacing: 0.03em;
+}
+
+/* Route Header */
+.route-option-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 0.625rem;
+}
+
+.route-label {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+}
+
+.route-letter {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--route-color, var(--primary-color));
+  color: white;
+  font-size: 0.75rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.route-name {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--dark-color);
+}
+
+.route-destination-type {
+  font-size: 0.625rem;
+  color: #6b7280;
+  background: var(--light-color);
+  padding: 0.125rem 0.375rem;
+  border-radius: 0.25rem;
+  margin-top: 0.125rem;
+}
+
+/* Route Metrics Grid */
+.route-metrics {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.5rem;
+  margin-bottom: 0.625rem;
+}
+
+.metric {
+  display: flex;
+  flex-direction: column;
+}
+
+.metric-label {
+  font-size: 0.625rem;
+  color: #9ca3af;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.125rem;
+}
+
+.metric-value {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--dark-color);
+}
+
+.metric-value.highlight {
+  color: var(--success-color);
+}
+
+.metric-value.warning {
+  color: var(--warning-color);
+}
+
+.metric-value.danger {
+  color: var(--danger-color);
+}
+
+/* Congestion Indicator */
+.congestion-indicator {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem;
+  background: var(--light-color);
+  border-radius: 0.375rem;
+  margin-bottom: 0.625rem;
+}
+
+.congestion-bar {
+  flex: 1;
+  height: 6px;
+  background: #e5e7eb;
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.congestion-fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.3s ease;
+}
+
+.congestion-label {
+  font-size: 0.6875rem;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+/* Route Action Button */
+.route-select-btn {
+  width: 100%;
+  padding: 0.5rem;
+  background: var(--route-color, var(--primary-color));
+  color: white;
+  border: none;
+  border-radius: 0.375rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  opacity: 0;
+  transform: translateY(4px);
+}
+
+.route-option:hover .route-select-btn,
+.route-option.selected .route-select-btn {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.route-select-btn:hover {
+  filter: brightness(1.1);
+}
+
+/* Route Summary Stats */
+.routes-summary {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.5rem;
+  padding: 0.75rem;
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  border-radius: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.summary-stat {
+  text-align: center;
+}
+
+.summary-stat-value {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--dark-color);
+}
+
+.summary-stat-label {
+  font-size: 0.5625rem;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* Real-time Badge */
+.realtime-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.5625rem;
+  color: var(--success-color);
+  background: rgba(34, 197, 94, 0.1);
+  padding: 0.1875rem 0.375rem;
+  border-radius: 0.25rem;
+  margin-left: auto;
+}
+
+.realtime-badge::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  background: var(--success-color);
+  border-radius: 50%;
+  animation: pulse 2s infinite;
+}
+
+/* Route Comparison Legend */
+.routes-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--border-color);
+}
+
+.route-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.625rem;
+  color: #6b7280;
+}
+
+.route-legend-color {
+  width: 12px;
+  height: 3px;
+  border-radius: 2px;
+}
+
+/* Refresh Button */
+.refresh-routes-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.375rem;
+  width: 100%;
+  padding: 0.625rem;
+  background: transparent;
+  border: 1px dashed var(--border-color);
+  border-radius: 0.5rem;
+  color: #6b7280;
+  font-size: 0.75rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  margin-top: 0.5rem;
+}
+
+.refresh-routes-btn:hover {
+  border-color: var(--primary-color);
+  color: var(--primary-color);
+  background: rgba(59, 130, 246, 0.05);
+}
+
+.refresh-icon {
+  transition: transform 0.3s;
+}
+
+.refresh-routes-btn:hover .refresh-icon {
+  transform: rotate(180deg);
+}
+
+/* Loading State for Routes */
+.routes-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  color: #6b7280;
+}
+
+.routes-loading-spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid var(--border-color);
+  border-top-color: var(--primary-color);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 0.75rem;
+}
+
+.routes-loading-text {
+  font-size: 0.75rem;
+  text-align: center;
+}
+
+/* No Routes Found */
+.no-routes {
+  text-align: center;
+  padding: 1.5rem;
+  color: #6b7280;
+}
+
+.no-routes-icon {
+  font-size: 2rem;
+  margin-bottom: 0.5rem;
+}
+
+.no-routes-text {
+  font-size: 0.8125rem;
+}
+
+/* Hospital Popup */
+.hospital-popup h4 {
+  color: var(--dark-color);
+  margin-bottom: 0.5rem;
+}
+
+.hospital-popup p {
+  font-size: 0.8125rem;
+  margin-bottom: 0.25rem;
+}
+
+/* Selected location marker pulse */
+.selected-location-marker {
+  animation: none;
+}
+
+/* Map cursor */
+.map-container {
+  cursor: crosshair;
+}
+
+.leaflet-grab {
+  cursor: crosshair;
+}
+
+.leaflet-dragging .leaflet-grab {
+  cursor: grabbing;
+}
+
+/* Responsive Styles */
+@media (max-width: 768px) {
+  .header h1 {
+    font-size: 1rem;
+  }
+
+  .control-panel {
+    position: fixed;
+    top: 0;
+    right: 0;
+    height: 100%;
+    width: 100%;
+    max-width: 320px;
+    transform: translateX(100%);
+  }
+
+  .control-panel.visible {
+    transform: translateX(0);
+  }
+
+  .mobile-toggle {
+    display: block;
+  }
+
+  .legend {
+    bottom: 5rem;
+    left: 0.5rem;
+    padding: 0.75rem;
+  }
+
+  .legend h4 {
+    font-size: 0.75rem;
+  }
+
+  .legend-item {
+    font-size: 0.625rem;
+  }
+
+  .legend-color {
+    width: 12px;
+    height: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .header {
+    padding: 0.5rem 1rem;
+  }
+
+  .status-indicator {
+    display: none;
+  }
+}
