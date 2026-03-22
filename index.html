@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Earthquake Escape Route Navigator</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script type="module" crossorigin src="/earthquake-escape-route/assets/index-Bf3ShtTs.js"></script>
+  <link rel="stylesheet" crossorigin href="/earthquake-escape-route/assets/index-CaqdGJ06.css">
+</head>
+<body>
+  <div id="app">
+    <!-- Header -->
+    <header class="header">
+      <h1>Earthquake Escape Route Navigator</h1>
+      <span class="status-indicator" id="status-indicator">Loading...</span>
+    </header>
+
+    <!-- Main Content -->
+    <div class="main-content">
+      
+      <!-- Map Container -->
+      <div id="map" class="map-container"></div>
+
+      <!-- Control Panel -->
+      <aside class="control-panel" id="control-panel">
+        <div class="panel-header">
+          <h2>Control Panel</h2>
+          <button class="toggle-panel" id="toggle-panel">×</button>
+        </div>
+
+        <!-- Earthquake Section -->
+        <section class="panel-section">
+          <h3>1. Load Earthquakes</h3>
+          <div class="form-group">
+            <label for="time-filter">Time Range:</label>
+            <select id="time-filter">
+              <option value="day">Last 24 Hours</option>
+              <option value="week" selected>Last 7 Days</option>
+              <option value="month">Last 30 Days</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="magnitude-filter">Min Magnitude:</label>
+            <select id="magnitude-filter">
+              <option value="2.5">2.5+</option>
+              <option value="4.5" selected>4.5+</option>
+              <option value="5.5">5.5+</option>
+              <option value="6.5">6.5+</option>
+            </select>
+          </div>
+          <button class="btn btn-primary" id="fetch-earthquakes">Fetch Earthquakes</button>
+          <p class="info-text" id="earthquake-count">Click to load earthquake data</p>
+        </section>
+
+        <!-- Selected Earthquake Info -->
+        <section class="panel-section" id="earthquake-info" style="display: none;">
+          <h3>Selected Earthquake</h3>
+          <div class="info-card">
+            <p><strong>Location:</strong> <span id="eq-location">-</span></p>
+            <p><strong>Magnitude:</strong> <span id="eq-magnitude">-</span></p>
+            <p><strong>Depth:</strong> <span id="eq-depth">-</span></p>
+            <p><strong>Time:</strong> <span id="eq-time">-</span></p>
+            <p><strong>Danger Zone:</strong> <span id="eq-danger-radius">-</span></p>
+          </div>
+        </section>
+
+        <!-- Location Section -->
+        <section class="panel-section">
+          <h3>2. Select Location</h3>
+          <p class="info-text">Click on the map to select your location:</p>
+          <button class="btn btn-secondary" id="get-location">Use My GPS Location</button>
+        </section>
+
+        <!-- Selected Location Info -->
+        <section class="panel-section" id="location-info" style="display: none;">
+          <h3>Selected Location</h3>
+          <div class="info-card">
+            <p><strong>Coordinates:</strong> <span id="loc-coords">-</span></p>
+            <p><strong>Status:</strong> <span id="loc-status">-</span></p>
+            <p><strong>Distance:</strong> <span id="loc-distance">-</span></p>
+          </div>
+        </section>
+
+        <!-- Hospitals Section -->
+        <section class="panel-section">
+          <h3>3. Find Hospitals</h3>
+          <p class="info-text">Find hospitals near your selected location:</p>
+          <button class="btn btn-secondary" id="find-hospitals">🏥 Find Nearby Hospitals</button>
+        </section>
+
+        <!-- Hospitals List -->
+        <section class="panel-section" id="hospitals-info" style="display: none;">
+          <h3>Nearby Hospitals</h3>
+          <p class="info-text" id="hospitals-count">-</p>
+          <p class="info-text"><strong>Selected:</strong> <span id="selected-hospital-name">None</span></p>
+          <div class="hospitals-list" id="hospitals-list">
+            <!-- Populated dynamically -->
+          </div>
+        </section>
+
+        <!-- Route Section -->
+        <section class="panel-section">
+          <h3>4. Calculate Routes</h3>
+          <div class="form-group">
+            <label for="travel-mode">Travel Mode:</label>
+            <select id="travel-mode">
+              <option value="car" selected>🚗 Driving</option>
+              <option value="foot">🚶 Walking</option>
+              <option value="bike">🚴 Cycling</option>
+            </select>
+          </div>
+          <button class="btn btn-primary" id="calculate-escape">🛤️ Find Escape Routes</button>
+          <button class="btn btn-danger" id="clear-route">Clear All</button>
+        </section>
+
+        <!-- Multi-Route Comparison -->
+        <section class="panel-section" id="routes-comparison-section" style="display: none;">
+          <h3>
+            Escape Routes
+            <span class="realtime-badge">LIVE</span>
+          </h3>
+          
+          <!-- Summary Stats -->
+          <div class="routes-summary" id="routes-summary">
+            <div class="summary-stat">
+              <div class="summary-stat-value" id="summary-routes">0</div>
+              <div class="summary-stat-label">Routes</div>
+            </div>
+            <div class="summary-stat">
+              <div class="summary-stat-value" id="summary-fastest">-</div>
+              <div class="summary-stat-label">Fastest</div>
+            </div>
+            <div class="summary-stat">
+              <div class="summary-stat-value" id="summary-shortest">-</div>
+              <div class="summary-stat-label">Shortest</div>
+            </div>
+          </div>
+
+          <!-- Route Options Container -->
+          <div class="routes-comparison" id="routes-list">
+            <!-- Route cards populated dynamically -->
+          </div>
+
+          <!-- Refresh Button -->
+          <button class="refresh-routes-btn" id="refresh-routes">
+            <span class="refresh-icon">🔄</span>
+            Refresh Traffic Data
+          </button>
+
+          <!-- Route Legend -->
+          <div class="routes-legend" id="routes-legend">
+            <!-- Legend items populated dynamically -->
+          </div>
+        </section>
+
+        <!-- Selected Route Info -->
+        <section class="panel-section" id="route-info" style="display: none;">
+          <h3>Selected Route Details</h3>
+          <div class="info-card route-card">
+            <p><strong>Destination:</strong> <span id="route-destination">-</span></p>
+            <p><strong>Distance:</strong> <span id="route-distance">-</span></p>
+            <p><strong>Est. Duration:</strong> <span id="route-duration">-</span></p>
+            <p><strong>Traffic Adjusted:</strong> <span id="route-adjusted-duration">-</span></p>
+            <p><strong>Congestion:</strong> <span id="route-congestion">-</span></p>
+            <p><strong>Route Status:</strong> <span id="route-status" class="status-safe">-</span></p>
+            <p><strong>Safety Score:</strong> <span id="route-safety" class="status-safe">-</span></p>
+          </div>
+        </section>
+      </aside>
+    </div>
+
+    <!-- Mobile Toggle Button -->
+    <button class="mobile-toggle" id="mobile-toggle">☰ Controls</button>
+
+    <!-- Legend -->
+    <div class="legend" id="legend">
+      <h4>Maginitude</h4>
+      <div class="legend-item">
+        <span class="legend-color" style="background: #22c55e;"></span>
+        <span>Low (&lt; 4.0)</span>
+      </div>
+      <div class="legend-item">
+        <span class="legend-color" style="background: #eab308;"></span>
+        <span>Moderate (4.0-5.9)</span>
+      </div>
+      <div class="legend-item">
+        <span class="legend-color" style="background: #f97316;"></span>
+        <span>High (6.0-6.9)</span>
+      </div>
+      <div class="legend-item">
+        <span class="legend-color" style="background: #ef4444;"></span>
+        <span>Major (7.0+)</span>
+      </div>
+      <div class="legend-item">
+        <span class="legend-color" style="background: #3b82f6;"></span>
+        <span>Your Location</span>
+      </div>
+      <div class="legend-item">
+        <span class="legend-color" style="background: #ef4444; border-radius: 4px;"></span>
+        <span>🏥 Hospital</span>
+      </div>
+    </div>
+  </div>
+
+</body>
+</html>
