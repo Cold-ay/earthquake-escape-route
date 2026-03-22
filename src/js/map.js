@@ -56,10 +56,6 @@ function handleMapClick(e) {
   }
 }
 
-export function getMap() {
-  return map;
-}
-
 /**
  * Display earthquakes on map
  */
@@ -212,12 +208,6 @@ export function setSelectedLocation(coords, isInDanger = false) {
   selectedLocationMarker.addTo(map);
 
   return selectedLocationMarker;
-}
-
-export function getSelectedLocation() {
-  if (!selectedLocationMarker) return null;
-  const latLng = selectedLocationMarker.getLatLng();
-  return { lat: latLng.lat, lng: latLng.lng };
 }
 
 export function clearSelectedLocation() {
@@ -508,13 +498,6 @@ export function selectRouteOnMap(index) {
 }
 
 /**
- * Get the currently selected route index
- */
-export function getSelectedRouteIndex() {
-  return selectedRouteIndex;
-}
-
-/**
  * Clear all multi-route layers
  */
 export function clearAllRoutes() {
@@ -542,14 +525,6 @@ export function clearRoute() {
     destinationMarker.remove();
     destinationMarker = null;
   }
-}
-
-export function clearAll() {
-  clearEarthquakeMarkers();
-  clearDangerZones();
-  clearAllRoutes();
-  clearHospitals();
-  clearSelectedLocation();
 }
 
 export function centerMap(coords, zoom = 10) {

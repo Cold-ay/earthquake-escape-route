@@ -89,34 +89,17 @@ function parseEarthquakeData(data) {
       id: feature.id,
       location: properties.place || 'Unknown location',
       magnitude: properties.mag,
-      depth: depth,
+      depth,
       time: new Date(properties.time),
       coordinates: {
-        lat: lat,
-        lng: lng
+        lat,
+        lng
       },
       url: properties.url,
       tsunami: properties.tsunami,
       felt: properties.felt,
       significance: properties.sig
     };
-  });
-}
-
-/**
- * Get earthquakes near a specific location
- * @param {Object} center - Center coordinates {lat, lng}
- * @param {number} radiusKm - Search radius in kilometers
- * @param {Array} earthquakes - Array of earthquake data
- * @returns {Array} Earthquakes within radius
- */
-export function getEarthquakesNearLocation(center, radiusKm, earthquakes) {
-  return earthquakes.filter(eq => {
-    const distance = calculateDistance(
-      center.lat, center.lng,
-      eq.coordinates.lat, eq.coordinates.lng
-    );
-    return distance <= radiusKm;
   });
 }
 

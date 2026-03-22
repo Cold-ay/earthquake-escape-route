@@ -7,18 +7,31 @@
 // OSRM public demo server (free, no API key required)
 const OSRM_API_URL = 'https://router.project-osrm.org/route/v1';
 
-// Travel mode profiles for OSRM
-const OSRM_PROFILES = {
-  car: 'driving',
-  foot: 'foot',
-  bike: 'cycling'
-};
-
-// Average speeds for different modes (km/h) - used for estimation
-export const TRAVEL_SPEEDS = {
-  car: { normal: 50, emergency: 35, congested: 15 },
-  foot: { normal: 5, emergency: 4, congested: 3 },
-  bike: { normal: 15, emergency: 12, congested: 8 }
+export const TRAVEL_MODE_CONFIG = {
+  car: {
+    profile: 'driving',
+    label: 'Driving',
+    typicalSpeedKmh: 50,
+    fallbackSpeedKmh: 40,
+    fallbackRoadFactor: 1.4,
+    trafficImpact: 1
+  },
+  foot: {
+    profile: 'foot',
+    label: 'Walking',
+    typicalSpeedKmh: 5,
+    fallbackSpeedKmh: 4,
+    fallbackRoadFactor: 1.1,
+    trafficImpact: 0.2
+  },
+  bike: {
+    profile: 'cycling',
+    label: 'Cycling',
+    typicalSpeedKmh: 15,
+    fallbackSpeedKmh: 12,
+    fallbackRoadFactor: 1.2,
+    trafficImpact: 0.45
+  }
 };
 
 /**
@@ -30,7 +43,8 @@ export const TRAVEL_SPEEDS = {
  * @returns {Promise<Object>} Route data with actual road distance and duration
  */
 export async function calculateRoute(origin, destination, travelMode = 'car', options = {}) {
-  const profile = OSRM_PROFILES[travelMode] || 'driving';
+  const modeConfig = TRAVEL_MODE_CONFIG[travelMode] || TRAVEL_MODE_CONFIG.car;
+  const profile = modeConfig.profile;
   const { alternatives = false } = options;
   
   // OSRM expects coordinates as lng,lat
@@ -57,16 +71,18 @@ export async function calculateRoute(origin, destination, travelMode = 'car', op
     }
 
     const route = data.routes[0];
+    const adjustedDuration = getModeAdjustedDuration(route.distance, route.duration, travelMode);
     
     // Parse road annotations for traffic estimation
     const roadAnnotations = parseRoadAnnotations(route.legs);
     
     return {
       distance: route.distance,           // meters (actual road distance)
-      duration: route.duration,           // seconds (actual estimated time)
+      duration: adjustedDuration,         // seconds (mode-adjusted estimated time)
       coordinates: route.geometry.coordinates, // GeoJSON [lng, lat] array
       steps: parseRouteSteps(route.legs),
       annotations: roadAnnotations,
+      travelMode,
       isRoadRoute: true,
       alternativeRoutes: alternatives ? data.routes.slice(1).map(alt => ({
         distance: alt.distance,
@@ -180,21 +196,15 @@ function parseRouteSteps(legs) {
  * Uses straight-line distance with estimated time
  */
 function createFallbackRoute(origin, destination, travelMode) {
+  const modeConfig = TRAVEL_MODE_CONFIG[travelMode] || TRAVEL_MODE_CONFIG.car;
   const distance = calculateHaversineDistance(
     origin.lat, origin.lng,
     destination.lat, destination.lng
   );
 
-  // Estimate travel time based on mode (road distance is typically 1.3-1.5x straight line)
-  const roadFactor = 1.4;
-  const speeds = {
-    car: 40,    // km/h average in emergency
-    foot: 4,    // km/h average
-    bike: 12    // km/h average
-  };
-  
-  const speed = speeds[travelMode] || speeds.car;
-  const estimatedRoadDistance = distance * roadFactor;
+  // Estimate travel time based on mode-specific fallback assumptions.
+  const estimatedRoadDistance = distance * modeConfig.fallbackRoadFactor;
+  const speed = modeConfig.fallbackSpeedKmh;
   const duration = (estimatedRoadDistance / speed) * 3600;
 
   // Create interpolated coordinates for display
@@ -202,12 +212,24 @@ function createFallbackRoute(origin, destination, travelMode) {
 
   return {
     distance: estimatedRoadDistance * 1000, // meters
-    duration: duration,                      // seconds
+    duration,                               // seconds
     coordinates: coordinates,
     steps: [],
+    travelMode,
     isRoadRoute: false,
     isFallback: true
   };
+}
+
+function getModeAdjustedDuration(distanceMeters, durationSeconds, travelMode) {
+  const modeConfig = TRAVEL_MODE_CONFIG[travelMode] || TRAVEL_MODE_CONFIG.car;
+
+  if (travelMode === 'car') {
+    return durationSeconds;
+  }
+
+  const baselineDuration = (distanceMeters / 1000 / modeConfig.typicalSpeedKmh) * 3600;
+  return Math.max(durationSeconds, baselineDuration);
 }
 
 /**

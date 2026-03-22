@@ -1,4 +1,5 @@
 import { CONFIG } from './config.js';
+import { TRAVEL_MODE_CONFIG } from './routing.js';
 
 export const CONGESTION_LEVELS = {
   LOW: { label: 'Low Traffic', color: '#22c55e', factor: 1.0, icon: '🟢' },
@@ -189,13 +190,7 @@ function aggregateTrafficSegments(segments) {
 
 function adjustFactorForMode(delayRatio, travelMode) {
   const normalizedDelay = Math.max(delayRatio - 1, 0);
-  const modeImpact = {
-    car: 1,
-    bike: 0.45,
-    foot: 0.2
-  };
-
-  const impact = modeImpact[travelMode] ?? 1;
+  const impact = TRAVEL_MODE_CONFIG[travelMode]?.trafficImpact ?? TRAVEL_MODE_CONFIG.car.trafficImpact;
   return Number((1 + normalizedDelay * impact).toFixed(2));
 }
 

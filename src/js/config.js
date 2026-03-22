@@ -40,7 +40,7 @@ export const CONFIG = {
 // Calculate danger radius based on magnitude (in km)
 export function calculateDangerRadius(magnitude) {
   // Mark not sure if formula correct
-  return Math.exp(0.666*magnitude + 1.6);
+  return Math.exp(0.666 * magnitude + 1.6);
 }
 
 // Color based on magnitude

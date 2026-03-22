@@ -108,7 +108,7 @@ function parseHospitalData(data, center) {
 
       return {
         id: `${element.type}-${element.id}`,
-        name: name,
+        name,
         coordinates: { lat, lng },
         distance: calculateDistance(center.lat, center.lng, lat, lng),
         address: tags['addr:full'] || tags['addr:street'] || '',

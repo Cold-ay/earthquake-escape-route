@@ -1,7 +1,6 @@
 import { formatEarthquakeTime } from './earthquake.js';
 import { calculateDangerRadius } from './config.js';
 import { formatDistance, formatDuration } from './routing.js';
-import { ROUTE_COLORS } from './multiRoute.js';
 
 let elements = {};
 let routeSelectHandler = null;
@@ -241,42 +240,6 @@ export function displaySelectedHospital(hospital) {
   }
 }
 
-export function displayRouteInfo(routeData, destination = null) {
-  if (!routeData) {
-    hideRouteInfo();
-    return;
-  }
-
-  elements.routeDistance.textContent = formatDistance(routeData.distance);
-  elements.routeDuration.textContent = formatDuration(routeData.duration);
-  
-  if (destination) {
-    elements.routeDestination.textContent = destination.name;
-  }
-  
-  let statusText = 'Road Route';
-  let statusClass = 'status-safe';
-  
-  if (routeData.isRoadRoute) {
-    statusText = 'Actual Road Route';
-    statusClass = 'status-safe';
-  } else if (routeData.isFallback) {
-    statusText = 'Estimated (Offline)';
-    statusClass = 'status-warning';
-  }
-  
-  if (routeData.duration > 3600) {
-    statusText += ' - Long';
-  }
-
-  if (elements.routeStatus) {
-    elements.routeStatus.textContent = statusText;
-    elements.routeStatus.className = statusClass;
-  }
-
-  elements.routeInfo.style.display = 'block';
-}
-
 export function hideRouteInfo() {
   if (elements.routeInfo) {
     elements.routeInfo.style.display = 'none';
@@ -378,8 +341,6 @@ function createRouteCard(route, index, recommendation) {
   // Determine metric highlight classes
   const durationClass = route.isFastest ? 'highlight' : 
                         route.metrics.adjustedDuration > 3600 ? 'warning' : '';
-  const congestionClass = congestion.score < 30 ? 'highlight' :
-                          congestion.score > 60 ? 'danger' : 'warning';
 
   return `
     <div class="route-option ${isRecommended ? 'recommended' : ''}" 

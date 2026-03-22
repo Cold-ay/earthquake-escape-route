@@ -331,32 +331,6 @@ export function generateAlternativeSafeZones(userLocation, earthquake, safeRadiu
 }
 
 /**
- * Merge hospitals and safe zones into destination options
- */
-export function mergeDestinations(hospitals, safeZones, maxCount = 4) {
-  const destinations = [];
-  
-  // Prioritize nearest hospitals
-  hospitals.slice(0, 2).forEach(h => {
-    destinations.push({
-      ...h,
-      type: 'hospital',
-      priority: 1
-    });
-  });
-  
-  // Add safe zones as alternatives
-  safeZones.slice(0, maxCount - destinations.length).forEach(sz => {
-    destinations.push({
-      ...sz,
-      priority: 2
-    });
-  });
-  
-  return destinations.slice(0, maxCount);
-}
-
-/**
  * Compare routes and generate recommendation
  */
 export function generateRouteRecommendation(routes) {

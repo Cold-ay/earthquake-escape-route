@@ -1,15 +1,14 @@
-import { initializeMap, displayEarthquakes, displayDangerZone, setSelectedLocation, 
-         getSelectedLocation, displayRoute, clearRoute, clearDangerZones, clearAll,
-         displayHospitals, clearHospitals, clearSelectedLocation, centerMap,
+import { initializeMap, displayEarthquakes, displayDangerZone, setSelectedLocation,
+         displayRoute, clearDangerZones, displayHospitals, clearHospitals,
+         clearSelectedLocation, centerMap,
          displayMultipleRoutes, selectRouteOnMap, clearAllRoutes } from './map.js';
 import { fetchEarthquakes } from './earthquake.js';
-import { calculateRoute } from './routing.js';
 import { calculateMultipleRoutes, generateAlternativeSafeZones, 
-         mergeDestinations, generateRouteRecommendation, calculateSingleRouteWithMetrics } from './multiRoute.js';
+         generateRouteRecommendation, calculateSingleRouteWithMetrics } from './multiRoute.js';
 import { fetchNearbyHospitals } from './facilities.js';
 import { CONFIG, calculateDangerRadius } from './config.js';
 import { initializeUI, updateEarthquakeCount, displayEarthquakeInfo, 
-         displayRouteInfo, setLoading, showError, showSuccess, hideRouteInfo,
+         getRouteOptions, setLoading, showError, showSuccess, hideRouteInfo,
          displayLocationInfo, hideLocationInfo, displayHospitalsInfo,
          hideHospitalsInfo, displaySelectedHospital, displayRoutesComparison,
          hideRoutesComparison, displaySelectedRouteInfo, selectRouteInUI,
@@ -23,7 +22,6 @@ const state = {
   isLocationInDanger: false,
   hospitals: [],
   selectedHospital: null,
-  currentRoute: null,
 
   // Multi-route state
   availableRoutes: [],
@@ -294,7 +292,7 @@ function selectHospitalById(id) {
   const hospital = state.hospitals.find(h => h.id === id);
   if (hospital) {
     handleHospitalSelect(hospital);
-    handleCalculateEscapeRoutes({ travelMode: 'car' });
+    handleCalculateEscapeRoutes(getRouteOptions());
   }
 }
 
@@ -360,7 +358,6 @@ async function handleCalculateSingleRoute(options, hospital, earthquake) {
 
     // Store in state
     state.availableRoutes = [route];
-    state.currentRoute = route;
     state.selectedRouteIndex = 0;
 
     // Display single route on map
@@ -454,7 +451,6 @@ async function handleCalculateMultipleRoutes(options, earthquake) {
  */
 function handleRouteSelect(route, index) {
   state.selectedRouteIndex = index;
-  state.currentRoute = route;
 
   // Highlight on map
   selectRouteOnMap(index);
@@ -489,51 +485,6 @@ async function handleRefreshRoutes(options) {
 }
 
 /**
- * Calculate bearing between two points
- */
-function calculateBearing(lat1, lon1, lat2, lon2) {
-  const φ1 = toRad(lat1);
-  const φ2 = toRad(lat2);
-  const Δλ = toRad(lon2 - lon1);
-
-  const y = Math.sin(Δλ) * Math.cos(φ2);
-  const x = Math.cos(φ1) * Math.sin(φ2) -
-            Math.sin(φ1) * Math.cos(φ2) * Math.cos(Δλ);
-  
-  return (toDeg(Math.atan2(y, x)) + 360) % 360;
-}
-
-function toDeg(rad) {
-  return rad * (180 / Math.PI);
-}
-
-/**
- * Calculate destination point from start, bearing, and distance
- */
-function calculateDestinationPoint(lat, lng, bearing, distanceKm) {
-  const R = 6371; // Average radius of the Earth in km
-  const δ = distanceKm / R; // Distance in radians
-  const θ = toRad(bearing); // Bearing in radians
-  const φ1 = toRad(lat); // Latitude in radians
-  const λ1 = toRad(lng); // Longitude in radians
-
-  const φ2 = Math.asin(
-    Math.sin(φ1) * Math.cos(δ) +
-    Math.cos(φ1) * Math.sin(δ) * Math.cos(θ)
-  );
-  
-  const λ2 = λ1 + Math.atan2(
-    Math.sin(θ) * Math.sin(δ) * Math.cos(φ1),
-    Math.cos(δ) - Math.sin(φ1) * Math.sin(φ2)
-  );
-
-  return {
-    lat: toDeg(φ2),
-    lng: toDeg(λ2)
-  };
-}
-
-/**
  * Handle clear route
  */
 function handleClearRoute() {
@@ -547,7 +498,6 @@ function handleClearRoute() {
   state.isLocationInDanger = false;
   state.hospitals = [];
   state.selectedHospital = null;
-  state.currentRoute = null;
   state.availableRoutes = [];
   state.selectedRouteIndex = -1;
   
