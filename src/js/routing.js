@@ -82,6 +82,40 @@ export async function calculateRoute(origin, destination, travelMode = 'car', op
   }
 }
 
+export function isRouteUsableForEscape(routeData) {
+  if (
+    !routeData ||
+    !routeData.isRoadRoute ||
+    routeData.isFallback ||
+    !Array.isArray(routeData.coordinates) ||
+    routeData.coordinates.length < 2
+  ) {
+    return false;
+  }
+
+  const steps = Array.isArray(routeData.steps) ? routeData.steps : [];
+
+  if (steps.length === 0) {
+    return false;
+  }
+
+  const hasForbiddenTransportStep = steps.some(step => {
+    const mode = String(step.mode || '').toLowerCase();
+    const name = String(step.name || '').toLowerCase();
+    const instruction = String(step.instruction || '').toLowerCase();
+
+    return (
+      mode === 'ferry' ||
+      mode === 'train' ||
+      name.includes('ferry') ||
+      name.includes('boat') ||
+      instruction.includes('ferry')
+    );
+  });
+
+  return !hasForbiddenTransportStep;
+}
+
 /**
  * Parse road annotations from OSRM for traffic/speed analysis
  */
@@ -131,7 +165,8 @@ function parseRouteSteps(legs) {
             instruction: step.maneuver.type + (step.maneuver.modifier ? ` ${step.maneuver.modifier}` : ''),
             distance: step.distance,
             duration: step.duration,
-            name: step.name || ''
+            name: step.name || '',
+            mode: step.mode || ''
           });
         }
       });

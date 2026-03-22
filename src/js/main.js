@@ -353,7 +353,7 @@ async function handleCalculateSingleRoute(options, hospital, earthquake) {
     );
 
     if (!route) {
-      showError('Could not calculate route to hospital. Please try again.');
+      showError(`No reachable ${options.travelMode} route to this hospital was found.`);
       setLoading(false);
       return;
     }
@@ -415,7 +415,7 @@ async function handleCalculateMultipleRoutes(options, earthquake) {
     );
 
     if (routes.length === 0) {
-      showNoRoutes('Could not calculate any routes. Please try again.');
+      showNoRoutes(`No reachable ${options.travelMode} escape routes were found. Try a different location or travel mode.`);
       setLoading(false);
       return;
     }

@@ -3,7 +3,7 @@
  * Compares routes by travel time, distance, and congestion
  */
 
-import { calculateRoute, formatDistance, formatDuration } from './routing.js';
+import { calculateRoute, formatDistance, formatDuration, isRouteUsableForEscape } from './routing.js';
 import { CONGESTION_LEVELS, estimateRouteCongestion } from './traffic.js';
 
 // Route colors for map display
@@ -26,6 +26,11 @@ export const ROUTE_COLORS = [
 export async function calculateSingleRouteWithMetrics(origin, destination, earthquake, travelMode = 'car') {
   try {
     const routeData = await calculateRoute(origin, destination.coordinates, travelMode);
+
+    if (!isRouteUsableForEscape(routeData)) {
+      console.warn(`Ignoring unreachable ${travelMode} route to ${destination.name}`);
+      return null;
+    }
     
     const congestion = await estimateCongestion(routeData, earthquake, travelMode);
     
@@ -71,9 +76,14 @@ export async function calculateSingleRouteWithMetrics(origin, destination, earth
  */
 export async function calculateMultipleRoutes(origin, earthquake, destinations, travelMode = 'car') {
   // Calculate routes to each destination in parallel
-  const routePromises = destinations.slice(0, 4).map(async (dest, index) => {
+  const routePromises = destinations.slice(0, 8).map(async (dest, index) => {
     try {
       const routeData = await calculateRoute(origin, dest.coordinates, travelMode);
+
+      if (!isRouteUsableForEscape(routeData)) {
+        console.warn(`Ignoring unreachable ${travelMode} route to ${dest.name}`);
+        return null;
+      }
       
       const congestion = await estimateCongestion(routeData, earthquake, travelMode);
       
@@ -113,7 +123,18 @@ export async function calculateMultipleRoutes(origin, earthquake, destinations, 
   // Filter out failed routes and sort by adjusted duration
   const validRoutes = results
     .filter(r => r !== null)
-    .sort((a, b) => a.metrics.adjustedDuration - b.metrics.adjustedDuration);
+    .sort((a, b) => a.metrics.adjustedDuration - b.metrics.adjustedDuration)
+    .slice(0, 4)
+    .map((route, index) => ({
+      ...route,
+      index,
+      destination: route.destination?.type === 'safe-zone'
+        ? {
+            ...route.destination,
+            name: `Safe Zone ${String.fromCharCode(65 + index)}`
+          }
+        : route.destination
+    }));
 
   // Mark the fastest route
   if (validRoutes.length > 0) {
@@ -261,19 +282,38 @@ export function generateAlternativeSafeZones(userLocation, earthquake, safeRadiu
     userLocation.lat, userLocation.lng
   );
   
-  // Generate 4 escape directions (away from epicenter)
-  // Primary: directly away from epicenter
-  // Alternatives: ±45° and ±90° from primary direction
-  const bearingOffsets = [0, -45, 45, -90];
-  const labels = ['Direct Escape', 'Northwest Route', 'Northeast Route', 'Perpendicular'];
+  const currentDistanceFromEpicenter = calculateDistanceKm(
+    earthquake.coordinates.lat,
+    earthquake.coordinates.lng,
+    userLocation.lat,
+    userLocation.lng
+  );
+
+  // Move outward from the user's location instead of projecting points from
+  // the epicenter. This keeps candidate destinations closer to real escape
+  // directions on the same side of the coastline/road network.
+  const minimumEscapeDistance = Math.max(5, safeRadius - currentDistanceFromEpicenter + 5);
+
+  // Generate several land-biased alternatives away from the epicenter.
+  const bearingOffsets = [0, -20, 20, -40, 40, -65, 65, 180];
+  const labels = [
+    'Direct Escape',
+    'Slight Left',
+    'Slight Right',
+    'Wide Left',
+    'Wide Right',
+    'Far Left',
+    'Far Right',
+    'Opposite Direction'
+  ];
   
   bearingOffsets.forEach((offset, index) => {
     const bearing = (userBearing + offset + 360) % 360;
     const destination = calculateDestinationPoint(
-      earthquake.coordinates.lat,
-      earthquake.coordinates.lng,
+      userLocation.lat,
+      userLocation.lng,
       bearing,
-      safeRadius + (index * 5)  // Slightly vary distances
+      minimumEscapeDistance + (index * 4)
     );
     
     safeZones.push({
@@ -283,7 +323,7 @@ export function generateAlternativeSafeZones(userLocation, earthquake, safeRadiu
       subtype: labels[index],
       coordinates: destination,
       bearing: bearing,
-      distance: safeRadius + (index * 5)
+      distance: minimumEscapeDistance + (index * 4)
     });
   });
   
@@ -374,6 +414,18 @@ function calculateBearing(lat1, lon1, lat2, lon2) {
             Math.sin(φ1) * Math.cos(φ2) * Math.cos(Δλ);
   
   return (toDeg(Math.atan2(y, x)) + 360) % 360;
+}
+
+function calculateDistanceKm(lat1, lon1, lat2, lon2) {
+  const R = 6371;
+  const dLat = toRad(lat2 - lat1);
+  const dLon = toRad(lon2 - lon1);
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
+    Math.sin(dLon / 2) * Math.sin(dLon / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c;
 }
 
 function calculateDestinationPoint(lat, lng, bearing, distanceKm) {
