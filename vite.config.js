@@ -11,4 +11,5 @@ export default defineConfig({
     port: 5173,
     open: true,
   },
+  base: "/earthquake-escape-route",
 });
