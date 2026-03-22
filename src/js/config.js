@@ -25,7 +25,16 @@ export const CONFIG = {
   // Safe zone settings
   SAFE_ZONE_COLOR: '#3b82f6',
   DANGER_ZONE_OPACITY: 0.2,
-  SAFE_BUFFER_MULTIPLIER: 1.5
+  SAFE_BUFFER_MULTIPLIER: 1.5,
+
+  // Facility display settings
+  MAX_HOSPITAL_RESULTS: 8,
+
+  // Live traffic settings
+  TOMTOM_TRAFFIC_BASE_URL: 'https://api.tomtom.com/traffic/services/4/flowSegmentData',
+  TRAFFIC_SAMPLE_POINTS: 4,
+  TRAFFIC_FLOW_ZOOM: 10,
+  TRAFFIC_CACHE_MS: 60 * 1000
 };
 
 // Calculate danger radius based on magnitude (in km)

@@ -220,7 +220,7 @@ export function displayHospitalsInfo(hospitals) {
       <span class="hospital-icon">🏥</span>
       <div class="hospital-details">
         <strong>${h.name}</strong>
-        <small>${h.distance.toFixed(1)} km from epicenter</small>
+        <small>${h.distance.toFixed(1)} km from selected location</small>
       </div>
     </div>
   `).join('');
@@ -269,8 +269,10 @@ export function displayRouteInfo(routeData, destination = null) {
     statusText += ' - Long';
   }
 
-  elements.routeStatus.textContent = statusText;
-  elements.routeStatus.className = statusClass;
+  if (elements.routeStatus) {
+    elements.routeStatus.textContent = statusText;
+    elements.routeStatus.className = statusClass;
+  }
 
   elements.routeInfo.style.display = 'block';
 }
@@ -371,6 +373,7 @@ function createRouteCard(route, index, recommendation) {
   const letter = String.fromCharCode(65 + index);
   const isRecommended = recommendation?.recommended?.id === route.id;
   const congestion = route.metrics.congestion;
+  const trafficSourceLabel = congestion.isRealTime ? 'Live' : 'Estimated';
   
   // Determine metric highlight classes
   const durationClass = route.isFastest ? 'highlight' : 
@@ -414,7 +417,7 @@ function createRouteCard(route, index, recommendation) {
 
       <div class="congestion-indicator">
         <span class="congestion-label" style="color: ${congestion.color};">
-          ${congestion.icon} ${congestion.label}
+          ${congestion.icon} ${congestion.label} (${trafficSourceLabel})
         </span>
         <div class="congestion-bar">
           <div class="congestion-fill" style="width: ${congestion.score}%; background: ${congestion.color};"></div>
@@ -474,7 +477,8 @@ export function displaySelectedRouteInfo(route) {
   }
   
   if (elements.routeCongestion) {
-    elements.routeCongestion.textContent = `${route.metrics.congestion.icon} ${route.metrics.congestion.label}`;
+    const sourceLabel = route.metrics.congestion.isRealTime ? 'Live' : 'Estimated';
+    elements.routeCongestion.textContent = `${route.metrics.congestion.icon} ${route.metrics.congestion.label} (${sourceLabel})`;
     elements.routeCongestion.style.color = route.metrics.congestion.color;
   }
   
@@ -488,8 +492,10 @@ export function displaySelectedRouteInfo(route) {
   let statusText = route.isRoadRoute ? 'Road Route' : 'Estimated';
   if (route.isFastest) statusText = '⭐ ' + statusText + ' (Fastest)';
   
-  elements.routeStatus.textContent = statusText;
-  elements.routeStatus.className = route.metrics.safetyScore > 60 ? 'status-safe' : 'status-warning';
+  if (elements.routeStatus) {
+    elements.routeStatus.textContent = statusText;
+    elements.routeStatus.className = route.metrics.safetyScore > 60 ? 'status-safe' : 'status-warning';
+  }
 
   elements.routeInfo.style.display = 'block';
 }

@@ -7,7 +7,7 @@ import { calculateRoute } from './routing.js';
 import { calculateMultipleRoutes, generateAlternativeSafeZones, 
          mergeDestinations, generateRouteRecommendation, calculateSingleRouteWithMetrics } from './multiRoute.js';
 import { fetchNearbyHospitals } from './facilities.js';
-import { calculateDangerRadius } from './config.js';
+import { CONFIG, calculateDangerRadius } from './config.js';
 import { initializeUI, updateEarthquakeCount, displayEarthquakeInfo, 
          displayRouteInfo, setLoading, showError, showSuccess, hideRouteInfo,
          displayLocationInfo, hideLocationInfo, displayHospitalsInfo,
@@ -234,31 +234,41 @@ function getCurrentPosition() {
  * Handle find nearby hospitals
  */
 async function handleFindHospitals() {
-  if (!state.selectedEarthquake) {
-    showError('Please select an earthquake first');
+  if (!state.selectedLocation) {
+    showError('Please select a location on the map first');
     return;
   }
 
   setLoading(true, 'Finding nearby hospitals...');
 
   try {
-    // Search hospitals within/close to earthquake area
-    const searchRadius = Math.max(calculateDangerRadius(state.selectedEarthquake.magnitude) * 2, 100);
+    // Search hospitals near the user's selected location.
+    const searchRadius = state.selectedEarthquake
+      ? Math.max(calculateDangerRadius(state.selectedEarthquake.magnitude), 30)
+      : 50;
+    const maxHospitals = CONFIG.MAX_HOSPITAL_RESULTS;
     
-    state.hospitals = await fetchNearbyHospitals(
-      state.selectedEarthquake.coordinates,
+    const hospitals = await fetchNearbyHospitals(
+      state.selectedLocation,
       searchRadius
     );
 
-    if (state.hospitals.length === 0) {
+    if (hospitals.length === 0) {
       showError('No hospitals found in the area.');
       return;
     }
 
+    // Keep only the nearest hospitals so the map stays readable.
+    state.hospitals = hospitals.slice(0, maxHospitals);
+
     // Display hospitals on map
     displayHospitals(state.hospitals, handleHospitalSelect);
     displayHospitalsInfo(state.hospitals);
-    showSuccess(`Found ${state.hospitals.length} hospitals`);
+    if (hospitals.length > maxHospitals) {
+      showSuccess(`Found ${hospitals.length} hospitals. Showing nearest ${maxHospitals}.`);
+    } else {
+      showSuccess(`Found ${state.hospitals.length} hospitals`);
+    }
 
   } catch (error) {
     showError('Failed to find hospitals');

@@ -4,6 +4,7 @@
  */
 
 import { calculateRoute, formatDistance, formatDuration } from './routing.js';
+import { CONGESTION_LEVELS, estimateRouteCongestion } from './traffic.js';
 
 // Route colors for map display
 export const ROUTE_COLORS = [
@@ -12,14 +13,6 @@ export const ROUTE_COLORS = [
   { primary: '#8b5cf6', name: 'Alternative', label: 'Route C' },  // Purple
   { primary: '#f59e0b', name: 'Scenic', label: 'Route D' }        // Amber
 ];
-
-// Congestion levels
-export const CONGESTION_LEVELS = {
-  LOW: { label: 'Low Traffic', color: '#22c55e', factor: 1.0, icon: '🟢' },
-  MODERATE: { label: 'Moderate', color: '#eab308', factor: 1.3, icon: '🟡' },
-  HIGH: { label: 'Heavy Traffic', color: '#f97316', factor: 1.6, icon: '🟠' },
-  SEVERE: { label: 'Severe Congestion', color: '#ef4444', factor: 2.2, icon: '🔴' }
-};
 
 /**
  * Calculate a single route with traffic/congestion metrics
@@ -34,8 +27,7 @@ export async function calculateSingleRouteWithMetrics(origin, destination, earth
   try {
     const routeData = await calculateRoute(origin, destination.coordinates, travelMode);
     
-    // Get real-time traffic/congestion estimate
-    const congestion = await estimateCongestion(origin, destination.coordinates, earthquake, travelMode);
+    const congestion = await estimateCongestion(routeData, earthquake, travelMode);
     
     // Calculate adjusted duration based on congestion
     const adjustedDuration = routeData.duration * congestion.factor;
@@ -78,15 +70,12 @@ export async function calculateSingleRouteWithMetrics(origin, destination, earth
  * @returns {Promise<Array>} Array of route options with comparison metrics
  */
 export async function calculateMultipleRoutes(origin, earthquake, destinations, travelMode = 'car') {
-  const routes = [];
-  
   // Calculate routes to each destination in parallel
   const routePromises = destinations.slice(0, 4).map(async (dest, index) => {
     try {
       const routeData = await calculateRoute(origin, dest.coordinates, travelMode);
       
-      // Get real-time traffic/congestion estimate
-      const congestion = await estimateCongestion(origin, dest.coordinates, earthquake, travelMode);
+      const congestion = await estimateCongestion(routeData, earthquake, travelMode);
       
       // Calculate adjusted duration based on congestion
       const adjustedDuration = routeData.duration * congestion.factor;
@@ -136,13 +125,20 @@ export async function calculateMultipleRoutes(origin, earthquake, destinations, 
 }
 
 /**
- * Estimate real-time congestion based on various factors
- * In production, this would call a traffic API (TomTom, HERE, Google)
+ * Estimate congestion from live traffic first, then fall back to the
+ * original heuristic model if live traffic is unavailable.
  */
-async function estimateCongestion(origin, destination, earthquake, travelMode) {
-  // Simulate real-time traffic data
-  // Factors: time of day, earthquake proximity, road type, historical patterns
-  
+async function estimateCongestion(routeData, earthquake, travelMode) {
+  const liveCongestion = await estimateRouteCongestion(routeData.coordinates, travelMode);
+
+  if (liveCongestion) {
+    return liveCongestion;
+  }
+
+  return estimateFallbackCongestion(earthquake, travelMode);
+}
+
+function estimateFallbackCongestion(earthquake, travelMode) {
   const now = new Date();
   const hour = now.getHours();
   const dayOfWeek = now.getDay();
@@ -196,7 +192,7 @@ async function estimateCongestion(origin, destination, earthquake, travelMode) {
     congestionScore *= 0.5;  // Cycling moderately affected
   }
   
-  // Add some randomness to simulate real-time variation
+  // Add some variation to avoid identical fallback values when live traffic is unavailable.
   congestionScore += Math.random() * 15 - 7;
   
   // Clamp to valid range
@@ -217,7 +213,8 @@ async function estimateCongestion(origin, destination, earthquake, travelMode) {
   return {
     score: Math.round(congestionScore),
     ...level,
-    isRealTime: false,  // Would be true with actual API
+    isRealTime: false,
+    provider: 'Fallback model',
     lastUpdated: new Date().toISOString()
   };
 }

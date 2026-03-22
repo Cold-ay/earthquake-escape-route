@@ -257,7 +257,7 @@ export function displayHospitals(hospitals, onSelect) {
     const popupContent = `
       <div class="hospital-popup">
         <h4>🏥 ${hospital.name}</h4>
-        <p><strong>Distance:</strong> ${hospital.distance.toFixed(1)} km from epicenter</p>
+        <p><strong>Distance:</strong> ${hospital.distance.toFixed(1)} km from selected location</p>
         ${hospital.address ? `<p><strong>Address:</strong> ${hospital.address}</p>` : ''}
         <button class="btn btn-primary" style="margin-top: 0.5rem; padding: 0.5rem; font-size: 0.75rem; width: 100%;" 
                 onclick="window.selectHospital('${hospital.id}')">

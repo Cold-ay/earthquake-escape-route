@@ -9,6 +9,7 @@ const OVERPASS_API_URL = 'https://overpass-api.de/api/interpreter';
 const hospitalCache = {
   data: null,
   center: null,
+  radiusKm: null,
   timestamp: null
 };
 
@@ -25,7 +26,8 @@ export async function fetchNearbyHospitals(center, radiusKm = 100) {
   if (
     hospitalCache.data &&
     hospitalCache.center &&
-      (hospitalCache.center, center) &&
+    isSameLocation(hospitalCache.center, center) &&
+    hospitalCache.radiusKm === radiusKm &&
     (Date.now() - hospitalCache.timestamp) < CACHE_DURATION
   ) {
     console.log('Returning cached hospital data');
@@ -66,6 +68,7 @@ export async function fetchNearbyHospitals(center, radiusKm = 100) {
     // Update cache
     hospitalCache.data = hospitals;
     hospitalCache.center = { ...center };
+    hospitalCache.radiusKm = radiusKm;
     hospitalCache.timestamp = Date.now();
 
     return hospitals;
