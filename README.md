@@ -432,9 +432,9 @@ For a quick demonstration:
 
 ## Important Notes And Limitations
 
-- The app is front-end only and depends on third-party public services.
-- Hospital data quality depends on OpenStreetMap coverage in the selected region.
+- The app is front-end only and requires internet access for third-party services and map tiles (USGS, OSRM, Overpass, and OpenStreetMap), plus `Leaflet` CSS loaded from `unpkg.com`; it is not fully offline-capable.
+- Earthquake loading depends on the public USGS feed (with short in-memory caching), so it will fail if USGS is unreachable.
+- Hospital loading depends on the OpenStreetMap Overpass API; if Overpass is unreachable, the hospital list may be empty.
 - Route quality depends on the public OSRM service and may fall back to estimated straight-line routing if the service is unavailable.
-- Live traffic depends on TomTom API availability and a valid `VITE_TOMTOM_API_KEY`.
-- If the traffic API is unavailable, the app falls back to the built-in congestion estimation logic.
+- Live traffic depends on TomTom API availability and `VITE_TOMTOM_API_KEY` (optional); if TomTom is unavailable or no key is configured, the app falls back to the built-in congestion estimation logic.
 - The danger radius is an estimated formula based on magnitude and may need domain validation for academic or real emergency use.
